@@ -12,14 +12,14 @@ authors = [
     {name = "David Turner"},
 ]
 dependencies = [
-    "torch>=2.0.0",
     "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
+torch = ["torch>=2.0.0"]
 ui = ["gradio>=4.0"]
 voice = ["vosk>=0.3"]
-all = ["gradio>=4.0", "vosk>=0.3"]
+all = ["torch>=2.0.0", "gradio>=4.0", "vosk>=0.3"]
 
 [project.scripts]
 aura = "aura.cli:main"
