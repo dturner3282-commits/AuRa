@@ -276,7 +276,7 @@ class ModelExporter:
             "description": "GapDet - Fully offline AI compiler/patcher/translator/gap-detector with sovereign reasoning",
             "author": "David Turner",
             "license": "MIT",
-            "source": "https://github.com/dturner3282-commits/s8",
+            "source": "https://github.com/dturner3282-commits/AuRa",
             "training_step": step,
             "architecture": {
                 "type": "encoder-decoder-transformer",
