@@ -1,0 +1,119 @@
+# Universal Compiler / Translator / AI / GDT System Configuration
+# Fully offline, air-gapped. No APIs.
+
+# --- PC Model (full-size, runs on laptop/desktop) ---
+pc_model:
+  name: "GapDetectorPC"
+  dim: 512
+  encoder_layers: 8
+  decoder_layers: 8
+  heads: 8
+  ff_dim: 2048
+  max_seq_len: 1024
+  vocab_size: 512       # byte-level (256) + special tokens
+  dropout: 0.1
+
+# --- ESP32 Model (tiny, runs on-device) ---
+esp32_model:
+  name: "GapDetectorESP32"
+  dim: 64
+  encoder_layers: 2
+  decoder_layers: 2
+  heads: 4
+  ff_dim: 256
+  max_seq_len: 256
+  vocab_size: 512
+  dropout: 0.0
+
+# --- Tokenizer ---
+tokenizer:
+  type: "byte"          # byte-level: handles ANY language, binary, config, etc.
+  vocab_size: 512       # 256 byte values + special tokens
+  special_tokens:
+    pad: 0
+    bos: 256            # beginning of sequence
+    eos: 257            # end of sequence
+    sep: 258            # separator (input/output boundary)
+    gap: 259            # gap marker (where model should fill)
+    patch_start: 260    # start of patch region
+    patch_end: 261      # end of patch region
+    lang_marker: 262    # language identifier follows
+    err_marker: 263     # error/bug marker
+
+# --- Training ---
+training:
+  batch_size: 32
+  learning_rate: 3.0e-4
+  warmup_steps: 1000
+  max_steps: 50000
+  grad_clip: 1.0
+  weight_decay: 0.01
+  checkpoint_every: 5000
+  eval_every: 1000
+  device: "auto"        # auto-detect cuda/cpu
+
+# --- Supported Languages ---
+languages:
+  low_level:
+    - c
+    - cpp
+    - assembly_x86
+    - assembly_arm
+    - llvm_ir
+  systems:
+    - rust
+    - go
+    - zig
+  scripting:
+    - python
+    - bash
+    - powershell
+    - lua
+    - perl
+    - ruby
+  mobile:
+    - java
+    - kotlin
+    - swift
+    - dart
+  web:
+    - javascript
+    - typescript
+    - html
+    - css
+    - php
+  firmware:
+    - arduino_cpp
+    - micropython
+    - esp_idf
+  config:
+    - yaml
+    - json
+    - toml
+    - xml
+    - ini
+    - sql
+    - makefile
+    - cmake
+  patch_formats:
+    - unified_diff
+    - git_patch
+    - binary_patch
+
+# --- GDT (Gap Detection) Categories ---
+gap_detection:
+  categories:
+    - missing_error_handling
+    - incomplete_implementation
+    - security_vulnerability
+    - missing_import
+    - type_mismatch
+    - buffer_overflow
+    - null_dereference
+    - resource_leak
+    - race_condition
+    - missing_bounds_check
+    - incomplete_switch
+    - dead_code
+    - missing_return
+    - uninitialized_variable

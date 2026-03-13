@@ -1,0 +1,110 @@
+{
+  "name": "David's Brain — GapDet Build Prompt",
+  "version": "1.0",
+  "author": "David Turner (@dturner3282-commits)",
+  "purpose": "Hand this to any AI agent to build/extend the GapDet system from scratch. No back-and-forth needed.",
+
+  "what_to_build": {
+    "summary": "A fully private, air-gapped, downloadable AI model that specializes in code compilation, patching, fixing, gap detection, and cross-language translation. Works 100% offline. No APIs. No cloud. Downloadable as a GGUF model file that runs in Ollama/Jan/llama.cpp/LM Studio.",
+    "primary_output": "GGUF model file + PyTorch checkpoint + model bundle (config.yaml, tokenizer.json, metadata.json, README, run.sh)",
+    "interface": "Simple CLI commands: gapdet detect/fix/complete/translate/analyze/train/export/ui/voice/info",
+    "offline_requirement": "100% offline after initial pip install. No APIs, no cloud, no internet needed."
+  },
+
+  "architecture": {
+    "model_type": "Encoder-decoder transformer (built from scratch, not fine-tuned)",
+    "tokenizer": "Byte-level (handles any programming language, binary, config format)",
+    "pc_model": {
+      "dim": 512,
+      "encoder_layers": 8,
+      "decoder_layers": 8,
+      "heads": 8,
+      "ff_dim": 2048,
+      "max_seq_len": 1024,
+      "vocab_size": 512
+    },
+    "esp32_model": {
+      "dim": 64,
+      "layers": 2,
+      "heads": 4,
+      "max_seq_len": 256,
+      "note": "Tiny model that fits on ESP32 hardware (~150KB int8)"
+    },
+    "gdt_head": {
+      "description": "Gap Detection Technology head — Uncle Greg's substrate",
+      "formulas": {
+        "gap_magnitude": "G = |E - O| (expected vs observed)",
+        "constraint_window": "C = [L, U]; meaningful gap only if G not in C",
+        "classifier": "Threshold-based: t1, t2 per language/system",
+        "stability": "S = 1 - (sum(G) / N)",
+        "delta_c_engine": "Combined: delta = |E-O|, filter through C, classify"
+      },
+      "categories": [
+        "no_gap", "missing_error_handling", "incomplete_implementation",
+        "security_vulnerability", "missing_import", "type_mismatch",
+        "buffer_overflow", "null_dereference", "resource_leak",
+        "race_condition", "missing_bounds_check", "incomplete_switch",
+        "dead_code", "missing_return", "uninitialized_variable", "syntax_error"
+      ]
+    }
+  },
+
+  "davids_brain": {
+    "description": "Background intelligence layer — runs like subconscious reasoning while foreground is normal chat",
+    "components": {
+      "ECL": "Emergence Continuity Loop — self-referential reasoning where meaning emerges from interaction of taxonomy + memory + validation, not hardcoded rules",
+      "Hangman": "Structured code analysis framework for gap detection — reveals what's missing, like the game",
+      "Loom": "Backstrap weaving model — warp (system framework) + weft (user interaction) + observer (the only constant). Hyper-consistent alignment through repeated touchpoints, not constant rigidity. Like Fibonacci spiral — never reaches 1 because observer keeps looking.",
+      "PIM": "Uncle Greg's Pattern-based Identification Method — deterministic element location via structural signatures, requires convergence from multiple independent signals",
+      "Genix": "Contextual memory store — SQLite-backed, personal knowledge graph, persists across sessions",
+      "SOV_CHECK": "Sovereignty validation gate — confidence threshold requiring user approval for uncertain actions",
+      "Greg_GDT": "Uncle Greg's Gap Detection Technology formulas — G=|E-O|, C=[L,U], threshold classifier, stability score, delta+C engine"
+    },
+    "key_principle": "The observer (David) is the only constant. Alignment is hyper-consistent hit points, not constant. Like backstrap weaving — allows curves and circles in what would normally be a grid."
+  },
+
+  "supported_languages": [
+    "c", "cpp", "python", "rust", "go", "java", "javascript", "typescript",
+    "bash", "arduino_cpp", "kotlin", "swift", "ruby", "php", "lua",
+    "assembly", "sql", "dockerfile", "yaml", "json", "toml", "xml",
+    "makefile", "cmake", "perl", "lisp", "zig", "haskell", "dart",
+    "terraform", "graphql", "protobuf"
+  ],
+
+  "capabilities": [
+    "Gap/bug detection in any supported language",
+    "Code patching (broken -> fixed)",
+    "Code completion (incomplete -> complete)",
+    "Cross-language translation",
+    "Compiler middleware validation (gcc, clang, rustc, go, javac, etc.)",
+    "Gradio web UI (gapdet ui)",
+    "Voice control via Vosk/SUSI.AI (gapdet voice)",
+    "GGUF export for Ollama/llama.cpp/Jan/LM Studio",
+    "Termux support (Android)",
+    "ESP32 deployment (tiny model)"
+  ],
+
+  "training_data": {
+    "type": "Synthetic (generated from 100+ templates)",
+    "tasks": ["patch (broken->fixed)", "completion (partial->complete)", "translation (lang A->lang B)", "gap_detection (classify gaps)"],
+    "note": "David has a database of 1200 system languages with compiled patches — can be fed in for retraining"
+  },
+
+  "cli_commands": {
+    "gapdet detect <file>": "Find gaps/bugs in code",
+    "gapdet fix <file>": "Fix broken code",
+    "gapdet complete <file>": "Complete incomplete code",
+    "gapdet translate <file> --to <lang>": "Translate to another language",
+    "gapdet analyze <file>": "Full analysis (detect + fix + validate)",
+    "gapdet train": "Train the model from scratch",
+    "gapdet export --bundle <dir>": "Export downloadable model bundle",
+    "gapdet ui": "Launch Gradio web UI",
+    "gapdet voice": "Voice control (Vosk/SUSI)",
+    "gapdet info": "Show model and system info"
+  },
+
+  "repo": "https://github.com/dturner3282-commits/s8",
+  "branch": "devin/1773390018-gapdet-full-capability",
+
+  "instructions_for_next_agent": "This prompt contains everything you need to understand David's vision. Do NOT ask clarifying questions — just build. The model should work like a normal AI chat (Ollama/Jan) but with David's Brain running in the background like subconscious reasoning. The primary deliverable is a downloadable GGUF model file. Everything is 100% offline. Uncle Greg's GDT formulas are the mathematical foundation. ECL/Hangman/Loom are the conceptual framework. Build it, train it, export it, ship it."
+}
