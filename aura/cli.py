@@ -23,6 +23,13 @@ import json
 import os
 from pathlib import Path
 
+# Check if PyTorch is available — determines full vs lite mode
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
 
 def read_input(file_path: str) -> str:
     """Read code from file or stdin."""
@@ -46,12 +53,26 @@ def get_model_path() -> str:
     return candidates[0]  # default even if not found yet
 
 
+def _get_engine(args):
+    """Get the appropriate inference engine (full or lite)."""
+    if TORCH_AVAILABLE and not getattr(args, 'lite', False):
+        model_path = args.model or get_model_path()
+        if os.path.exists(model_path):
+            from aura.core.inference.engine import InferenceEngine
+            return InferenceEngine(model_path, device=args.device)
+        else:
+            print(f"[INFO] No model found at {model_path}, using lite mode (rule-based)", file=sys.stderr)
+    elif not TORCH_AVAILABLE:
+        print("[INFO] PyTorch not installed, using lite mode (rule-based)", file=sys.stderr)
+
+    from aura.core.inference.lite_engine import LiteEngine
+    return LiteEngine()
+
+
 def cmd_detect(args):
     """Detect gaps in code."""
-    from aura.core.inference.engine import InferenceEngine
-
     code = read_input(args.file)
-    engine = InferenceEngine(args.model or get_model_path(), device=args.device)
+    engine = _get_engine(args)
     results = engine.detect_gaps(code, language=args.lang)
 
     if args.json:
@@ -68,6 +89,11 @@ def cmd_detect(args):
 
 def cmd_fix(args):
     """Fix broken code."""
+    if not TORCH_AVAILABLE:
+        print("[ERROR] 'fix' command requires PyTorch. Install with: pip install torch", file=sys.stderr)
+        print("[INFO] Use 'aura detect' for rule-based gap detection (works without PyTorch)", file=sys.stderr)
+        sys.exit(1)
+
     from aura.core.inference.engine import InferenceEngine
 
     code = read_input(args.file)
@@ -94,6 +120,10 @@ def cmd_fix(args):
 
 def cmd_complete(args):
     """Complete incomplete code."""
+    if not TORCH_AVAILABLE:
+        print("[ERROR] 'complete' command requires PyTorch. Install with: pip install torch", file=sys.stderr)
+        sys.exit(1)
+
     from aura.core.inference.engine import InferenceEngine
 
     code = read_input(args.file)
@@ -113,6 +143,10 @@ def cmd_complete(args):
 
 def cmd_translate(args):
     """Translate code to another language."""
+    if not TORCH_AVAILABLE:
+        print("[ERROR] 'translate' command requires PyTorch. Install with: pip install torch", file=sys.stderr)
+        sys.exit(1)
+
     from aura.core.inference.engine import InferenceEngine
 
     code = read_input(args.file)
@@ -141,10 +175,8 @@ def cmd_translate(args):
 
 def cmd_analyze(args):
     """Full analysis."""
-    from aura.core.inference.engine import InferenceEngine
-
     code = read_input(args.file)
-    engine = InferenceEngine(args.model or get_model_path(), device=args.device)
+    engine = _get_engine(args)
     result = engine.analyze(code, language=args.lang)
 
     if args.json:
@@ -233,41 +265,45 @@ def cmd_voice(args):
 
 def cmd_info(args):
     """Show model and system info."""
-    import torch
-
-    print("=== AuRA - David's Brain ===")
+    print("=== AuRA - Autonomous Universal Recognition Agent ===")
     print(f"Version: 0.2.0")
-    print(f"PyTorch: {torch.__version__}")
-    print(f"CUDA available: {torch.cuda.is_available()}")
-    if torch.cuda.is_available():
-        print(f"GPU: {torch.cuda.get_device_name(0)}")
-        print(f"GPU memory: {torch.cuda.get_device_properties(0).total_mem / 1e9:.1f} GB")
-    print(f"Device: {'cuda' if torch.cuda.is_available() else 'cpu'}")
 
-    model_path = args.model or get_model_path()
-    if os.path.exists(model_path):
-        ckpt = torch.load(model_path, map_location="cpu", weights_only=False)
-        config = ckpt.get("config", {})
-        pc = config.get("pc_model", {})
-        print(f"\n=== Model Info ===")
-        print(f"Path: {model_path}")
-        print(f"Size: {os.path.getsize(model_path) / 1e6:.1f} MB")
-        print(f"Dim: {pc.get('dim', '?')}")
-        print(f"Encoder layers: {pc.get('encoder_layers', '?')}")
-        print(f"Decoder layers: {pc.get('decoder_layers', '?')}")
-        print(f"Heads: {pc.get('heads', '?')}")
-        print(f"Training step: {ckpt.get('step', '?')}")
+    if TORCH_AVAILABLE:
+        print(f"Mode: Full (PyTorch {torch.__version__})")
+        print(f"CUDA available: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            print(f"GPU: {torch.cuda.get_device_name(0)}")
+            print(f"GPU memory: {torch.cuda.get_device_properties(0).total_mem / 1e9:.1f} GB")
+        print(f"Device: {'cuda' if torch.cuda.is_available() else 'cpu'}")
+
+        model_path = args.model or get_model_path()
+        if os.path.exists(model_path):
+            ckpt = torch.load(model_path, map_location="cpu", weights_only=False)
+            config = ckpt.get("config", {})
+            pc = config.get("pc_model", {})
+            print(f"\n=== Model Info ===")
+            print(f"Path: {model_path}")
+            print(f"Size: {os.path.getsize(model_path) / 1e6:.1f} MB")
+            print(f"Dim: {pc.get('dim', '?')}")
+            print(f"Encoder layers: {pc.get('encoder_layers', '?')}")
+            print(f"Decoder layers: {pc.get('decoder_layers', '?')}")
+            print(f"Heads: {pc.get('heads', '?')}")
+            print(f"Training step: {ckpt.get('step', '?')}")
+        else:
+            print(f"\nNo model found at {model_path}")
+            print("Train one with: aura train")
     else:
-        print(f"\nNo model found at {model_path}")
-        print("Train one with: aura train")
+        print(f"Mode: Lite (rule-based, no PyTorch)")
+        print(f"Note: Install PyTorch for full AI capabilities: pip install torch")
 
+    # Available compilers
     from aura.plugins.compiler.middleware import CompilerMiddleware
     cm = CompilerMiddleware()
     langs = cm.get_available_languages()
     print(f"\n=== Available Compilers ===")
-    print(f"Languages: {', '.join(langs)}")
+    print(f"Languages: {', '.join(langs) if langs else 'none detected'}")
 
-    # Show sovereign brain status
+    # Sovereign brain status
     try:
         from aura.core.sovereign.brain import create_brain
         brain = create_brain()
@@ -282,12 +318,22 @@ def cmd_info(args):
         print(f"\n=== David's Brain ===")
         print(f"Status: Not initialized (run any command to start)")
 
-    # Show training data stats
+    # Training data stats
     from aura.core.data.generator import PATCH_TEMPLATES, TRANSLATION_TEMPLATES, COMPLETION_TEMPLATES
     print(f"\n=== Training Data ===")
     print(f"Patch templates: {len(PATCH_TEMPLATES)}")
     print(f"Translation templates: {len(TRANSLATION_TEMPLATES)}")
     print(f"Completion templates: {len(COMPLETION_TEMPLATES)}")
+
+    # Lite engine info
+    if not TORCH_AVAILABLE:
+        from aura.core.inference.lite_engine import LiteEngine
+        lite = LiteEngine()
+        info = lite.info()
+        print(f"\n=== Lite Mode ===")
+        print(f"Available: {', '.join(info['capabilities'])}")
+        print(f"Limited: {', '.join(info['limited_capabilities'])}")
+        print(f"Gap categories: {len(info['gap_categories'])}")
 
 
 def main():
@@ -297,6 +343,7 @@ def main():
     )
     parser.add_argument("--model", type=str, default=None, help="Path to model .pt file")
     parser.add_argument("--device", type=str, default=None, help="Device (cuda/cpu)")
+    parser.add_argument("--lite", action="store_true", help="Force lite mode (rule-based, no PyTorch needed)")
 
     subparsers = parser.add_subparsers(dest="command", help="Command")
 

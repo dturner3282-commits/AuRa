@@ -122,9 +122,9 @@ def _quantize_tensor_q8(tensor: torch.Tensor) -> bytes:
 def export_gguf(
     checkpoint_path: str,
     output_path: str,
-    model_name: str = "gapdet",
+    model_name: str = "aura",
     quantize: bool = True,
-    description: str = "GapDet - Offline AI compiler/patcher/translator/gap-detector",
+    description: str = "AuRA - Autonomous Universal Recognition Agent. Offline AI compiler/patcher/translator/gap-detector.",
 ) -> str:
     """
     Export a trained GapDet model to GGUF format.
@@ -156,22 +156,25 @@ def export_gguf(
 
     # Prepare metadata
     metadata = {
-        "general.architecture": ("gapdet", GGUF_TYPE_STRING),
+        "general.architecture": ("aura", GGUF_TYPE_STRING),
         "general.name": (model_name, GGUF_TYPE_STRING),
         "general.description": (description, GGUF_TYPE_STRING),
         "general.file_type": (8 if quantize else 0, GGUF_TYPE_UINT32),  # Q8_0 or F32
-        "general.author": ("GapDet", GGUF_TYPE_STRING),
+        "general.author": ("David Turner", GGUF_TYPE_STRING),
         "general.license": ("MIT", GGUF_TYPE_STRING),
-        "general.source.url": ("https://github.com/dturner3282-commits/s8", GGUF_TYPE_STRING),
+        "general.source.url": ("https://github.com/dturner3282-commits/AuRa", GGUF_TYPE_STRING),
+
+        # Jan/Ollama compatibility
+        "general.quantization_version": (2, GGUF_TYPE_UINT32),
 
         # Architecture params
-        "gapdet.vocab_size": (pc_cfg.get("vocab_size", 512), GGUF_TYPE_UINT32),
-        "gapdet.embedding_length": (pc_cfg.get("dim", 512), GGUF_TYPE_UINT32),
-        "gapdet.block_count": (pc_cfg.get("encoder_layers", 8), GGUF_TYPE_UINT32),
-        "gapdet.decoder_block_count": (pc_cfg.get("decoder_layers", 8), GGUF_TYPE_UINT32),
-        "gapdet.head_count": (pc_cfg.get("heads", 8), GGUF_TYPE_UINT32),
-        "gapdet.feed_forward_length": (pc_cfg.get("ff_dim", 2048), GGUF_TYPE_UINT32),
-        "gapdet.context_length": (pc_cfg.get("max_seq_len", 1024), GGUF_TYPE_UINT32),
+        "aura.vocab_size": (pc_cfg.get("vocab_size", 512), GGUF_TYPE_UINT32),
+        "aura.embedding_length": (pc_cfg.get("dim", 512), GGUF_TYPE_UINT32),
+        "aura.block_count": (pc_cfg.get("encoder_layers", 8), GGUF_TYPE_UINT32),
+        "aura.decoder_block_count": (pc_cfg.get("decoder_layers", 8), GGUF_TYPE_UINT32),
+        "aura.head_count": (pc_cfg.get("heads", 8), GGUF_TYPE_UINT32),
+        "aura.feed_forward_length": (pc_cfg.get("ff_dim", 2048), GGUF_TYPE_UINT32),
+        "aura.context_length": (pc_cfg.get("max_seq_len", 1024), GGUF_TYPE_UINT32),
 
         # Tokenizer info
         "tokenizer.ggml.model": ("byte", GGUF_TYPE_STRING),
@@ -181,10 +184,10 @@ def export_gguf(
         ),
 
         # Training info
-        "gapdet.training_step": (checkpoint.get("step", 0), GGUF_TYPE_UINT32),
+        "aura.training_step": (checkpoint.get("step", 0), GGUF_TYPE_UINT32),
 
         # Capabilities
-        "gapdet.capabilities": (
+        "aura.capabilities": (
             (GGUF_TYPE_STRING, [
                 "gap_detection", "code_patching", "code_completion",
                 "cross_language_translation", "compiler_validation",
@@ -193,7 +196,7 @@ def export_gguf(
         ),
 
         # Supported languages
-        "gapdet.languages": (
+        "aura.languages": (
             (GGUF_TYPE_STRING, [
                 "c", "cpp", "python", "rust", "go", "java", "javascript",
                 "typescript", "bash", "arduino", "assembly", "lua", "ruby",
@@ -282,7 +285,7 @@ def main():
     parser = argparse.ArgumentParser(description="Export GapDet model to GGUF format")
     parser.add_argument("--checkpoint", required=True, help="Path to .pt checkpoint")
     parser.add_argument("--output", default="gapdet.gguf", help="Output .gguf file")
-    parser.add_argument("--name", default="gapdet", help="Model name")
+    parser.add_argument("--name", default="aura", help="Model name")
     parser.add_argument("--no-quantize", action="store_true", help="Skip quantization (larger file)")
     args = parser.parse_args()
 

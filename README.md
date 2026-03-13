@@ -22,9 +22,20 @@ It includes **David's Brain** — a sovereign background intelligence layer with
 - **SOV-CHECK** — sovereignty validation gate
 - **GDT** — Gap Detection Technology using Uncle Greg's formulas
 
+**Full user guide: [USER_GUIDE.md](USER_GUIDE.md)** — Complete breakdown of every command, function, ability, and example.
+
+## Two Modes: Full vs Lite
+
+AuRA automatically detects your environment and adjusts:
+
+- **Full Mode** (PC with PyTorch): Neural AI model for detect, fix, complete, translate, analyze, train, export
+- **Lite Mode** (Phone/Ventoy/old devices): Rule-based gap detection using Uncle Greg's GDT formulas. No PyTorch needed. Just Python 3.
+
+Force lite mode anytime: `aura --lite detect myfile.c`
+
 ## Quick Install
 
-### PC / Laptop (Python 3.9+)
+### PC / Laptop — Full Mode (Python 3.9+)
 
 ```bash
 git clone https://github.com/dturner3282-commits/AuRa.git
@@ -34,16 +45,42 @@ pip install -e .
 aura info
 ```
 
-### Termux (Android / Fire Tablet) — No Login Required
+### Termux (Android / Fire Tablet) — Lite Mode, No Login Required
 
 ```bash
-pkg install python git && git clone https://github.com/dturner3282-commits/AuRa.git && cd AuRa && pip install torch pyyaml && pip install -e . && aura info
+pkg install python git
+git clone https://github.com/dturner3282-commits/AuRa.git
+cd AuRa
+pip install pyyaml
+pip install -e .
+aura info
 ```
 
-Or use the install script:
+Skip `pip install torch` on phones — AuRA automatically uses lite mode (rule-based) when PyTorch isn't installed.
+
+**One-liner:**
 ```bash
-curl -sL https://raw.githubusercontent.com/dturner3282-commits/AuRa/main/scripts/install_termux.sh | bash
+pkg install python git && git clone https://github.com/dturner3282-commits/AuRa.git && cd AuRa && pip install pyyaml && pip install -e . && aura info
 ```
+
+### Ventoy / USB Linux Boot
+
+Boot into your Linux partition, open a terminal:
+```bash
+git clone https://github.com/dturner3282-commits/AuRa.git
+cd AuRa
+pip install pyyaml
+pip install -e .
+aura info
+```
+
+### Using with Jan (Pixel 6 / Android)
+
+1. Train AuRA on your PC: `aura train --steps 10000`
+2. Export GGUF: `aura export --format gguf`
+3. Transfer `aura.gguf` to your phone (push to GitHub, USB, or file share)
+4. Open Jan → **Downloaded Models** → **Import Model** → select `aura.gguf`
+5. Chat with your model — fully offline
 
 ## Usage
 
