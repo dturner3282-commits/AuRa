@@ -6,11 +6,13 @@ dist/
 build/
 *.egg
 
-# Model checkpoints
+# Model checkpoints (training intermediates)
 checkpoints/
-*.pt
-*.gguf
-*.bin
+
+# Allow trained models in models/ directory
+!models/
+!models/*.pt
+!models/*.gguf
 
 # Sovereign memory
 .davids_brain/

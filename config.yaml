@@ -1,19 +1,21 @@
 # Universal Compiler / Translator / AI / GDT System Configuration
 # Fully offline, air-gapped. No APIs.
 
-# --- PC Model (full-size, runs on laptop/desktop) ---
+# --- PC Model (trained, runs on laptop/desktop) ---
 pc_model:
   name: "GapDetectorPC"
-  dim: 512
-  encoder_layers: 8
-  decoder_layers: 8
-  heads: 8
-  ff_dim: 2048
-  max_seq_len: 1024
+  dim: 128
+  encoder_layers: 3
+  decoder_layers: 3
+  heads: 4
+  ff_dim: 512
+  max_seq_len: 256
   vocab_size: 512       # byte-level (256) + special tokens
   dropout: 0.1
+  trained_model: "models/pc_model_final.pt"    # pre-trained weights
+  gguf_model: "models/aura.gguf"               # GGUF export for Jan/Ollama
 
-# --- ESP32 Model (tiny, runs on-device) ---
+# --- ESP32 Model (tiny, trained, runs on-device) ---
 esp32_model:
   name: "GapDetectorESP32"
   dim: 64
@@ -24,6 +26,7 @@ esp32_model:
   max_seq_len: 256
   vocab_size: 512
   dropout: 0.0
+  trained_model: "models/esp32_model_final.pt"  # pre-trained weights
 
 # --- Tokenizer ---
 tokenizer:
