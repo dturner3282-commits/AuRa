@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.gguf
+*.bin
+
+# Sovereign memory
+.davids_brain/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+*.env
+
+# Temp
+/tmp/
+*.tmp

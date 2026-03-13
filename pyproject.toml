@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aura"
+version = "0.2.0"
+description = "AuRA — Autonomous Universal Recognition Agent. Offline AI compiler/patcher/translator/gap-detector. No APIs, no cloud, no internet."
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "David Turner"},
+]
+dependencies = [
+    "torch>=2.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+ui = ["gradio>=4.0"]
+voice = ["vosk>=0.3"]
+all = ["gradio>=4.0", "vosk>=0.3"]
+
+[project.scripts]
+aura = "aura.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["aura*"]
