@@ -2,6 +2,9 @@
 AuRA CLI - David's Brain - Simple command-line interface.
 
 Usage:
+    aura process <file>             Auto-detect file type, show options (the mirror)
+    aura signal <file>              Decode audio signal (11-step protocol)
+    aura search <query>             Search knowledge base (try 'Greg Turner')
     aura detect <file>              Find gaps/bugs in code
     aura fix <file>                 Fix broken code
     aura complete <file>            Complete incomplete code
@@ -263,6 +266,159 @@ def cmd_voice(args):
     )
 
 
+def cmd_process(args):
+    """Adaptive processor — auto-detect file type, show options, route to plugin."""
+    from aura.process import detect_file_type, get_actions_for_category, run_action, interactive_process
+
+    file_path = args.file
+    if not os.path.exists(file_path):
+        print("File not found: %s" % file_path, file=sys.stderr)
+        sys.exit(1)
+
+    if args.action:
+        # Direct mode: skip menu, run the specified action
+        file_info = detect_file_type(file_path)
+        result = run_action(file_path, args.action, file_info)
+        if args.json:
+            print(json.dumps(result, indent=2, default=str))
+        else:
+            _print_process_result(result)
+    else:
+        # Interactive mode: show options, ask user
+        result = interactive_process(file_path)
+        if args.json:
+            print(json.dumps(result, indent=2, default=str))
+        else:
+            _print_process_result(result)
+
+
+def _print_process_result(result):
+    """Pretty-print adaptive processor results."""
+    if not result:
+        return
+
+    # Signal decode result
+    if 'decoded_word' in result:
+        print("\n" + "=" * 50)
+        print("  SIGNAL DECODE RESULT")
+        print("=" * 50)
+        print("  Word:       %s" % result.get('summary', 'N/A'))
+        print("  ECL:        %.1f / 7.0" % result.get('ecl', 0))
+        print("  Confidence: %s" % result.get('confidence', 'N/A'))
+        print("  Signal:     %s" % result.get('signal_type', 'N/A'))
+        print("=" * 50)
+        if result.get('technical_report'):
+            print("\n--- Technical Report ---")
+            print(result['technical_report'])
+        return
+
+    # Frequency inventory
+    if result.get('type') == 'frequency_inventory':
+        print("\nFrequency Inventory (%d windows, %d Hz sample rate)" % (
+            result['total_windows'], result['sample_rate']))
+        for f in result['frequencies']:
+            print("  %6.0f Hz  —  %d hits" % (f['freq_hz'], f['count']))
+        return
+
+    # Gap detection result
+    if 'results' in result:
+        for report in result['results']:
+            print("\nGaps found: %d" % report.get('total_gaps_found', 0))
+            print("Severity: %s" % report.get('severity', 'N/A'))
+            for gap in report.get('gaps', []):
+                print("  [%.0f%%] pos %d: %s" % (
+                    gap['confidence'] * 100, gap['position'], gap['category']))
+        return
+
+    # Generic fallback
+    for key, value in result.items():
+        if isinstance(value, str) and len(value) > 200:
+            print("  %s: %s..." % (key, value[:200]))
+        else:
+            print("  %s: %s" % (key, value))
+
+
+def cmd_signal(args):
+    """Decode an audio signal using the 11-step protocol."""
+    file_path = args.file
+    if not os.path.exists(file_path):
+        print("File not found: %s" % file_path, file=sys.stderr)
+        sys.exit(1)
+
+    from aura.plugins.signal.engine import decode_file
+    result = decode_file(file_path)
+
+    if args.json:
+        # Remove technical_report from JSON for cleaner output unless verbose
+        output = dict(result)
+        if not args.verbose:
+            output.pop('technical_report', None)
+        print(json.dumps(output, indent=2, default=str))
+    else:
+        print("\n" + "=" * 50)
+        print("  SIGNAL DECODE RESULT")
+        print("=" * 50)
+        print("  Word:       %s" % result.get('summary', 'N/A'))
+        print("  ECL:        %.1f / 7.0" % result.get('ecl', 0))
+        print("  Confidence: %s" % result.get('confidence', 'N/A'))
+        print("  Signal:     %s" % result.get('signal_type', 'N/A'))
+        print("=" * 50)
+
+        if args.verbose and result.get('technical_report'):
+            print("\n--- Technical Report ---")
+            print(result['technical_report'])
+
+
+def cmd_search(args):
+    """Search AuRA knowledge base. Easter egg: try 'Greg Turner'."""
+    query = args.query.strip()
+
+    # Easter egg: Uncle Greg's GDT formulas
+    if query.lower() in ('greg turner', 'uncle greg', 'gdt', 'greg'):
+        print()
+        print("=" * 60)
+        print("  Uncle Greg's Gap Detection Technology (GDT)")
+        print("=" * 60)
+        print()
+        print("  G = |E - O|        Gap magnitude (expected vs observed)")
+        print("  C = [L, U]         Confidence interval")
+        print("  Classifier         Binary gap / no-gap decision")
+        print("  S = 1 - (SumG / N) Soundness score")
+        print("  Delta + C Engine   Iterative gap closure")
+        print()
+        print("  ---")
+        print()
+        print("  Thank you, Greg, for the ideas and groundwork")
+        print("  that helped spark this project.")
+        print("  Your thinking opened the gap. We followed it.")
+        print()
+        print("=" * 60)
+        return
+
+    # General search: look through sovereign memory concepts
+    try:
+        from aura.core.sovereign.brain import create_brain
+        brain = create_brain()
+        concept = brain.memory.get_concept(query.upper())
+        if concept:
+            print("\n  %s" % concept['name'])
+            print("  %s" % concept['definition'])
+            if concept.get('relationships'):
+                print("  Related: %s" % ', '.join(concept['relationships']))
+        else:
+            # Search genix
+            value = brain.memory.get_genix(query)
+            if value:
+                print("\n  %s: %s" % (query, value))
+            else:
+                print("\n  No results for '%s'" % query)
+                print("  Try: ECL, PIM, GDT, Hangman, Loom, Genix, or 'Greg Turner'")
+        brain.close()
+    except Exception:
+        print("\n  No results for '%s'" % query)
+        print("  Try: 'Greg Turner', 'GDT', 'ECL', 'PIM', 'Hangman'")
+
+
 def cmd_info(args):
     """Show model and system info."""
     print("=== AuRA - Autonomous Universal Recognition Agent ===")
@@ -416,6 +572,25 @@ def main():
     p_voice.add_argument("--engine", type=str, default="vosk", choices=["vosk", "susi"], help="Voice engine")
     p_voice.add_argument("--vosk-model", type=str, default=None, help="Path to Vosk model")
     p_voice.set_defaults(func=cmd_voice)
+
+    # process (adaptive — the cognitive mirror)
+    p_process = subparsers.add_parser("process", help="Auto-detect file type and show options")
+    p_process.add_argument("file", help="Any file (audio, code, config, text, image, binary)")
+    p_process.add_argument("--action", type=str, default=None, help="Skip menu, run this action directly")
+    p_process.add_argument("--json", action="store_true", help="JSON output")
+    p_process.set_defaults(func=cmd_process)
+
+    # signal (direct signal decode)
+    p_signal = subparsers.add_parser("signal", help="Decode audio signal (11-step protocol)")
+    p_signal.add_argument("file", help="Audio file (WAV, MP3, M4A, OGG, FLAC)")
+    p_signal.add_argument("--json", action="store_true", help="JSON output")
+    p_signal.add_argument("--verbose", "-v", action="store_true", help="Include technical report")
+    p_signal.set_defaults(func=cmd_signal)
+
+    # search (knowledge base + Easter egg)
+    p_search = subparsers.add_parser("search", help="Search AuRA knowledge base")
+    p_search.add_argument("query", help="Search term (try 'Greg Turner')")
+    p_search.set_defaults(func=cmd_search)
 
     # info
     p_info = subparsers.add_parser("info", help="Show model and system info")
