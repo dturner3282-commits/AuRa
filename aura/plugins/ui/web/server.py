@@ -348,6 +348,11 @@ class AuraHandler(http.server.BaseHTTPRequestHandler):
         body = json.loads(self._read_body())
         text = body.get("text", "").strip()
 
+        # Easter egg: chicken butt
+        if text.lower().strip().rstrip("?!. ") in ("guess what",):
+            self._json_response({"result": "chicken butt"})
+            return
+
         # Check for search/Easter egg
         if text.lower() in ("greg turner", "uncle greg", "gdt", "greg"):
             lines = [
