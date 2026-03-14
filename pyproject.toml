@@ -19,7 +19,8 @@ dependencies = [
 torch = ["torch>=2.0.0"]
 ui = ["gradio>=4.0"]
 voice = ["vosk>=0.3"]
-all = ["torch>=2.0.0", "gradio>=4.0", "vosk>=0.3"]
+signal = ["numpy>=1.24", "scipy>=1.10"]
+all = ["torch>=2.0.0", "gradio>=4.0", "vosk>=0.3", "numpy>=1.24", "scipy>=1.10"]
 
 [project.scripts]
 aura = "aura.cli:main"
